@@ -1,0 +1,129 @@
+# ============================================================
+# IntelliTraffic – Configuration File
+# ============================================================
+
+# --- Video Source ---
+video:
+  source: "sample.mp4"          # Path to video file, or integer (0) for webcam
+  output_path: "output.mp4"     # Path to save processed video
+  display: true                 # Show live window (CLI mode)
+  resize_width: 1280            # Resize frame width (null to keep original)
+  fps_limit: 30                 # Max FPS for processing
+
+# --- YOLOv8 Detection ---
+detection:
+  model_path: "yolov8n.pt"     # Pretrained model (auto-downloads)
+  confidence: 0.4               # Minimum detection confidence
+  iou_threshold: 0.5            # NMS IoU threshold
+  device: "cpu"                 # "cpu" or "cuda" or "0" for GPU
+  # COCO class IDs for vehicles and persons
+  vehicle_classes: [2, 3, 5, 7]  # car, motorcycle, bus, truck
+  person_class: 0
+  class_names:
+    0: "person"
+    2: "car"
+    3: "motorcycle"
+    5: "bus"
+    7: "truck"
+
+# --- DeepSORT Tracker ---
+tracker:
+  max_age: 30                   # Frames to keep track alive without detection
+  n_init: 3                     # Detections needed to confirm track
+  max_iou_distance: 0.7         # Max IoU distance for matching
+  embedder: "mobilenet"         # Feature extractor for ReID
+  embedder_gpu: false            # Use GPU for embedder
+
+# --- Speed Estimation ---
+speed:
+  enabled: true
+  # Perspective transform: 4 source points → 4 destination points
+  # Source points (pixel coordinates in video frame)
+  # These should be calibrated per camera view
+  source_points: [[300, 400], [980, 400], [1200, 700], [100, 700]]
+  # Destination points (real-world coordinates in meters)
+  dest_points: [[0, 0], [10, 0], [10, 30], [0, 30]]
+  # Speed calculation parameters
+  smoothing_window: 5           # Rolling average window (frames)
+  min_track_length: 3           # Min frames tracked before speed calc
+  speed_limit: 60               # Speed limit in km/h
+
+# --- Traffic Density ---
+density:
+  enabled: true
+  # ROI polygon points (pixel coordinates)
+  roi_points: [[100, 300], [1180, 300], [1200, 700], [80, 700]]
+  # Density thresholds (vehicle count)
+  low_threshold: 5
+  high_threshold: 15
+  # Heatmap settings
+  heatmap_enabled: true
+  heatmap_decay: 0.95           # Decay factor per frame
+  heatmap_intensity: 5          # Gaussian blur intensity
+
+# --- Violation Detection ---
+violations:
+  overspeeding:
+    enabled: true
+    threshold: 60               # km/h
+  triple_riding:
+    enabled: true
+    iou_threshold: 0.3          # Min overlap between person and motorcycle
+    min_persons: 3              # Persons on bike to trigger violation
+  wrong_direction:
+    enabled: false
+    expected_direction: "down"  # Expected traffic flow direction
+  cooldown_seconds: 10          # Don't re-flag same vehicle within this time
+
+# --- ANPR ---
+anpr:
+  enabled: true
+  languages: ["en"]             # EasyOCR languages
+  gpu: false                    # Use GPU for OCR
+  confidence_threshold: 0.3     # Min OCR confidence
+  # Plate format regex (adjust for your region)
+  plate_pattern: "[A-Z]{2}\\d{2}[A-Z]{1,2}\\d{4}"  # Indian format: XX00XX0000
+  cache_results: true           # Cache per track_id
+
+# --- E-Challan / Enforcement ---
+enforcement:
+  enabled: true
+  # Database
+  db_path: "data/challans.db"
+  csv_path: "data/logs.csv"
+  # Snapshots
+  snapshot_dir: "data/snapshots"
+  # Email (disabled by default - set enabled: true and fill credentials)
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 465
+    sender_email: "your_email@gmail.com"
+    sender_password: "your_app_password"  # Use Gmail App Password
+    recipient_email: "test@example.com"   # Default recipient for demo
+    subject_prefix: "[IntelliTraffic] E-Challan"
+
+# --- Risk Engine ---
+risk:
+  enabled: true
+  weights:
+    density: 0.4                # w1
+    avg_speed: 0.3              # w2
+    violation_count: 0.3        # w3
+  # Thresholds for risk classification
+  low_threshold: 0.3
+  high_threshold: 0.7
+  update_interval: 30           # Update every N frames
+  # Normalization ranges
+  max_density: 30               # Max expected vehicles in ROI
+  max_speed: 120                # Max expected speed km/h
+  max_violations: 10            # Max expected violations per window
+
+# --- Dashboard ---
+dashboard:
+  title: "IntelliTraffic – Traffic Intelligence Dashboard"
+  refresh_rate: 0.1             # Seconds between frame updates
+  theme: "dark"
+  show_heatmap: true
+  show_risk: true
+  page_icon: "🚦"

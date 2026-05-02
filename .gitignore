@@ -1,0 +1,30 @@
+# Environments
+venv/
+env/
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Downloaded Models
+yolov8n.pt
+*.pt
+*.weights
+
+# Data and Outputs
+data/*.db
+data/snapshots/*.jpg
+data/snapshots/*.png
+data/logs.csv
+output.mp4
+temp_upload.mp4
+
+# OS generated files
+.DS_Store
+Thumbs.db
