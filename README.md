@@ -38,48 +38,9 @@ A real-time traffic monitoring system powered by computer vision that detects ve
 
 ---
 
-## 📁 Project Structure
-
-```
-intelliTraffic/
-├── main.py                    # Pipeline runner (CLI mode)
-├── config.yaml                # All configurable parameters
-├── requirements.txt           # Python dependencies
-├── README.md
-├── detection/
-│   ├── __init__.py
-│   ├── detector.py            # YOLOv8 vehicle detection wrapper
-│   └── tracker.py             # DeepSORT multi-object tracking
-├── modules/
-│   ├── __init__.py
-│   ├── speed.py               # Speed estimation (perspective transform)
-│   ├── density.py             # Traffic density + heatmap
-│   ├── violation.py           # Overspeeding + triple riding detection
-│   └── anpr.py                # Number plate recognition (EasyOCR)
-├── engine/
-│   ├── __init__.py
-│   ├── risk_engine.py         # Zone-level risk scoring
-│   └── enforcement.py         # E-challan generation + email
-├── dashboard/
-│   ├── __init__.py
-│   └── app.py                 # Streamlit dashboard
-├── utils/
-│   ├── __init__.py
-│   ├── config.py              # YAML config loader
-│   └── drawing.py             # Visualization helpers
-└── data/
-    ├── logs.csv               # Auto-generated challan logs
-    ├── challans.db            # SQLite database
-    └── snapshots/             # Violation snapshots
-```
-
----
-
 ## 🔧 Prerequisites
 
 - **Python 3.8+** (3.10+ recommended)
-- **pip** (Python package manager)
-- **Git** (optional, for cloning)
 - A traffic video file (MP4, AVI, MOV) for testing
 
 ---
@@ -210,35 +171,8 @@ enforcement:
 | **Density** | ROI Polygon Test | Counts vehicles in zone, classifies LOW/MEDIUM/HIGH |
 | **Violations** | Rule Engine | Overspeeding, triple riding (person-motorcycle IoU) |
 | **ANPR** | EasyOCR | Reads number plates from vehicle crops |
-| **Risk** | Weighted Formula | `Risk = w1*density + w2*speed + w3*violations` |
+| **Risk** | Weighted Formula |
 | **Enforcement** | SQLite + SMTP | Generates challans, stores logs, sends email alerts |
-
-### Speed Estimation
-
-```
-1. Track vehicle center positions across frames
-2. Apply perspective transform: pixel → meters
-3. Calculate: speed = distance / time × 3.6 (m/s → km/h)
-4. Smooth with rolling average over N frames
-```
-
-### Triple Riding Detection
-
-```
-1. Find all motorcycle detections
-2. For each motorcycle, find overlapping person detections
-3. Compute IoU (Intersection over Union) of person bbox with motorcycle bbox
-4. If overlapping persons ≥ 3 → TRIPLE RIDING violation
-```
-
-### Risk Scoring
-
-```
-Risk = w1 × normalized_density + w2 × normalized_speed + w3 × normalized_violations
-- All values normalized to [0, 1]
-- LOW: score < 0.3  |  MEDIUM: 0.3-0.7  |  HIGH: > 0.7
-```
-
 ---
 
 ## 📊 Output Files
@@ -267,19 +201,6 @@ python main.py --source your_video.mp4 --output result.mp4
 
 ---
 
-## 🛠️ Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| `ModuleNotFoundError` | Run `pip install -r requirements.txt` |
-| YOLO model download fails | Manually download `yolov8n.pt` from [Ultralytics](https://github.com/ultralytics/ultralytics) |
-| EasyOCR download slow | First run downloads ~100MB language models. Be patient. |
-| Low FPS | Reduce `resize_width` in config, or use `yolov8n.pt` (nano) |
-| Email not sending | Verify Gmail App Password and enable 2FA |
-| Camera not opening | Check camera index (try 0, 1, 2) |
-
----
-
 ## 📋 Technical Stack
 
 - **Python 3.8+**
@@ -293,7 +214,3 @@ python main.py --source your_video.mp4 --output result.mp4
 - **smtplib** – Email notifications (Python stdlib)
 
 ---
-
-## 📄 License
-
-This project is for educational and research purposes.
